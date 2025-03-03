@@ -1,0 +1,24 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.2.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "locc", "locc\locc.csproj", "{945C0740-7BA1-3BA8-AEC4-CF1F3B7F9B57}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{945C0740-7BA1-3BA8-AEC4-CF1F3B7F9B57}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{945C0740-7BA1-3BA8-AEC4-CF1F3B7F9B57}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{945C0740-7BA1-3BA8-AEC4-CF1F3B7F9B57}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{945C0740-7BA1-3BA8-AEC4-CF1F3B7F9B57}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {9BD9F76F-1C90-4793-A767-24804F3E67EC}
+	EndGlobalSection
+EndGlobal
