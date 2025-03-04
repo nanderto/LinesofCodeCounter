@@ -4,6 +4,8 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+using System.Threading;
 
 class Program
 {
@@ -15,50 +17,87 @@ class Program
     };
     private const string ColumnFormat = " {0,10} ";
     private const string FileColumnFormat = " {0,8} ";
-    private const string NameColumnFormat = "{0,-20} |";
+    private const string NameColumnFormat = "{0,-25} |";
     
     private class LanguageInfo
     {
         public required string Name { get; init; }
         public required string[] LineComments { get; init; }
         public required (string Start, string End)[] BlockComments { get; init; }
+        public bool IsProgrammingLanguage { get; init; } = false;
     }
 
     private static readonly Dictionary<string, LanguageInfo> LanguageConfigs = new()
     {
         // C-style languages
-        [".cs"] = new() { Name = "C#", LineComments = new[] { "//" }, BlockComments = new[] { ("/*", "*/") } },
-        [".java"] = new() { Name = "Java", LineComments = new[] { "//" }, BlockComments = new[] { ("/*", "*/") } },
-        [".js"] = new() { Name = "JavaScript", LineComments = new[] { "//" }, BlockComments = new[] { ("/*", "*/") } },
-        [".ts"] = new() { Name = "TypeScript", LineComments = new[] { "//" }, BlockComments = new[] { ("/*", "*/") } },
-        [".cpp"] = new() { Name = "C++", LineComments = new[] { "//" }, BlockComments = new[] { ("/*", "*/") } },
-        [".c"] = new() { Name = "C", LineComments = new[] { "//" }, BlockComments = new[] { ("/*", "*/") } },
+        [".cs"] = new() { Name = "C#", LineComments = new[] { "//" }, BlockComments = new[] { ("/*", "*/") }, IsProgrammingLanguage = true },
+        [".java"] = new() { Name = "Java", LineComments = new[] { "//" }, BlockComments = new[] { ("/*", "*/") }, IsProgrammingLanguage = true },
+        [".js"] = new() { Name = "JavaScript", LineComments = new[] { "//" }, BlockComments = new[] { ("/*", "*/") }, IsProgrammingLanguage = true },
+        [".ts"] = new() { Name = "TypeScript", LineComments = new[] { "//" }, BlockComments = new[] { ("/*", "*/") }, IsProgrammingLanguage = true },
+        [".cpp"] = new() { Name = "C++", LineComments = new[] { "//" }, BlockComments = new[] { ("/*", "*/") }, IsProgrammingLanguage = true },
+        [".c"] = new() { Name = "C", LineComments = new[] { "//" }, BlockComments = new[] { ("/*", "*/") }, IsProgrammingLanguage = true },
         
         // Script languages
-        [".py"] = new() { Name = "Python", LineComments = new[] { "#" }, BlockComments = new[] { ("\"\"\"", "\"\"\""), ("'''", "'''") } },
-        [".rb"] = new() { Name = "Ruby", LineComments = new[] { "#" }, BlockComments = new[] { ("=begin", "=end") } },
-        [".php"] = new() { Name = "PHP", LineComments = new[] { "//", "#" }, BlockComments = new[] { ("/*", "*/") } },
+        [".py"] = new() { Name = "Python", LineComments = new[] { "#" }, BlockComments = new[] { ("\"\"\"", "\"\"\""), ("'''", "'''") }, IsProgrammingLanguage = true },
+        [".rb"] = new() { Name = "Ruby", LineComments = new[] { "#" }, BlockComments = new[] { ("=begin", "=end") }, IsProgrammingLanguage = true },
+        [".php"] = new() { Name = "PHP", LineComments = new[] { "//", "#" }, BlockComments = new[] { ("/*", "*/") }, IsProgrammingLanguage = true },
         
-        // Shell scripts
+        // Shell scripts and configuration
         [".sh"] = new() { Name = "Shell", LineComments = new[] { "#" }, BlockComments = new (string, string)[] { } },
         [".bash"] = new() { Name = "Shell", LineComments = new[] { "#" }, BlockComments = new (string, string)[] { } },
         [".ps1"] = new() { Name = "PowerShell", LineComments = new[] { "#" }, BlockComments = new[] { ("<#", "#>") } },
+        [".yaml"] = new() { Name = "YAML", LineComments = new[] { "#" }, BlockComments = new (string, string)[] { } },
+        [".yml"] = new() { Name = "YAML", LineComments = new[] { "#" }, BlockComments = new (string, string)[] { } },
         
-        // Web technologies
+        // Web and markup technologies
         [".html"] = new() { Name = "HTML", LineComments = new string[] { }, BlockComments = new[] { ("<!--", "-->") } },
         [".xml"] = new() { Name = "XML", LineComments = new string[] { }, BlockComments = new[] { ("<!--", "-->") } },
         [".xsd"] = new() { Name = "XML Schema", LineComments = new string[] { }, BlockComments = new[] { ("<!--", "-->") } },
         [".targets"] = new() { Name = "MSBuild Targets", LineComments = new string[] { }, BlockComments = new[] { ("<!--", "-->") } },
-        [".csproj"] = new() { Name = "VS Project", LineComments = new string[] { }, BlockComments = new[] { ("<!--", "-->") } },
+        [".csproj"] = new() { Name = "Visual Studio Project", LineComments = new string[] { }, BlockComments = new[] { ("<!--", "-->") } },
+        [".sln"] = new() { Name = "Visual Studio Solution", LineComments = new string[] { }, BlockComments = new (string, string)[] { } },
         [".css"] = new() { Name = "CSS", LineComments = new string[] { }, BlockComments = new[] { ("/*", "*/") } },
+        [".md"] = new() { Name = "Markdown", LineComments = new string[] { }, BlockComments = new (string, string)[] { } },
         
-        // Other common languages
-        [".sql"] = new() { Name = "SQL", LineComments = new[] { "--" }, BlockComments = new[] { ("/*", "*/") } },
-        [".lua"] = new() { Name = "Lua", LineComments = new[] { "--" }, BlockComments = new[] { ("--[[", "]]") } },
-        [".go"] = new() { Name = "Go", LineComments = new[] { "//" }, BlockComments = new[] { ("/*", "*/") } }
+        // Other programming languages
+        [".sql"] = new() { Name = "SQL", LineComments = new[] { "--" }, BlockComments = new[] { ("/*", "*/") }, IsProgrammingLanguage = true },
+        [".lua"] = new() { Name = "Lua", LineComments = new[] { "--" }, BlockComments = new[] { ("--[[", "]]") }, IsProgrammingLanguage = true },
+        [".go"] = new() { Name = "Go", LineComments = new[] { "//" }, BlockComments = new[] { ("/*", "*/") }, IsProgrammingLanguage = true }
     };
 
     private record struct LineStats(int TotalLines, int NonBlankLines, int CommentLines, int CommentedCodeLines, int FileCount);
+    
+    private class ProgressInfo
+    {
+        public int CurrentFile { get; set; }
+        public int TotalFiles { get; set; }
+        public string CurrentFileName { get; set; } = "";
+    }
+
+    private static string CreateProgressBar(int current, int total, int width = 40)
+    {
+        float percentage = (float)current / total;
+        int filled = (int)(width * percentage);
+        string bar = new string('█', filled) + new string('░', width - filled);
+        return $"[{bar}] {percentage:P0}";
+    }
+
+    private static void UpdateProgress(ProgressInfo info)
+    {
+        var progressBar = CreateProgressBar(info.CurrentFile, info.TotalFiles);
+        var status = $"{info.CurrentFile}/{info.TotalFiles} files";
+        var fileName = info.CurrentFileName;
+        
+        // Ensure the display fits within the console width
+        var maxFileNameLength = Math.Max(10, Console.WindowWidth - progressBar.Length - status.Length - 5);
+        if (fileName.Length > maxFileNameLength)
+        {
+            fileName = "..." + fileName.Substring(fileName.Length - maxFileNameLength + 3);
+        }
+
+        var display = $"\r{progressBar} {status} | {fileName}";
+        Console.Write(display.PadRight(Console.WindowWidth - 1));
+    }
 
     static async Task Main(string[] args)
     {
@@ -73,6 +112,7 @@ class Program
 
         bool showBlankLines = args.Contains("--show-blank-lines");
         bool showByFileType = args.Contains("--by-extension");
+        bool showProgrammingTotal = args.Contains("--show-languages-total");
         string repoPath;
 
         var pathArgs = args.Where(arg => !arg.StartsWith("--") && arg != "-v").ToArray();
@@ -100,8 +140,12 @@ class Program
                 return;
         }
 
-        var stats = await CountLinesInRepository(repoPath);
-        PrintResults(stats, showBlankLines, showByFileType);
+        Console.WriteLine("Scanning repository...");
+        var progress = new Progress<ProgressInfo>(UpdateProgress);
+
+        var stats = await CountLinesInRepository(repoPath, progress);
+        Console.WriteLine(); // Clear the progress line
+        PrintResults(stats, showBlankLines, showByFileType, showProgrammingTotal);
     }
 
     private static void PrintVersion()
@@ -116,13 +160,23 @@ class Program
         Console.WriteLine(description);
     }
 
-    private static async Task<Dictionary<string, LineStats>> CountLinesInRepository(string repoPath)
+    private static async Task<Dictionary<string, LineStats>> CountLinesInRepository(string repoPath, IProgress<ProgressInfo>? progress = null)
     {
         var stats = new Dictionary<string, LineStats>();
-        var files = GetCodeFiles(repoPath);
+        var files = GetCodeFiles(repoPath).ToList();
+        var totalFiles = files.Count;
+        var currentFile = 0;
 
         foreach (var file in files)
         {
+            currentFile++;
+            progress?.Report(new ProgressInfo 
+            { 
+                CurrentFile = currentFile, 
+                TotalFiles = totalFiles,
+                CurrentFileName = Path.GetFileName(file)
+            });
+
             var extension = Path.GetExtension(file).ToLower();
             var fileStats = await CountLinesInFile(file);
 
@@ -260,121 +314,90 @@ class Program
         return codeIndicators.Any(pattern => Regex.IsMatch(line, pattern));
     }
 
-    private static void PrintResults(Dictionary<string, LineStats> stats, bool showBlankLines, bool showByFileType)
+    private static void PrintResults(Dictionary<string, LineStats> stats, bool showBlankLines, bool showByFileType, bool showProgrammingTotal)
     {
-        var groupedStats = showByFileType
-            ? stats.ToDictionary(kvp => kvp.Key, kvp => kvp.Value)
-            : GroupStatsByLanguage(stats);
-
-        Console.WriteLine($"\nLines of Code by {(showByFileType ? "File Type" : "Language")}:");
-        Console.WriteLine();
-
-        // Print header
-        PrintTableHeader(showBlankLines);
+        if (!stats.Any())
+        {
+            Console.WriteLine("No code files found!");
+            return;
+        }
 
         var totalStats = new LineStats(0, 0, 0, 0, 0);
+        var programmingTotalStats = new LineStats(0, 0, 0, 0, 0);
 
-        // Print each language/file type
-        foreach (var stat in groupedStats.OrderByDescending(x => x.Value.NonBlankLines - x.Value.CommentLines - x.Value.CommentedCodeLines))
-        {
-            PrintTableRow(stat.Key, stat.Value, showBlankLines);
-            
-            totalStats = new LineStats(
-                totalStats.TotalLines + stat.Value.TotalLines,
-                totalStats.NonBlankLines + stat.Value.NonBlankLines,
-                totalStats.CommentLines + stat.Value.CommentLines,
-                totalStats.CommentedCodeLines + stat.Value.CommentedCodeLines,
-                totalStats.FileCount + stat.Value.FileCount
-            );
-        }
-
-        // Print separator
-        PrintTableSeparator(showBlankLines);
-
-        // Print totals
-        PrintTableRow("Total", totalStats, showBlankLines, true);
-    }
-
-    private static Dictionary<string, LineStats> GroupStatsByLanguage(Dictionary<string, LineStats> stats)
-    {
-        var result = new Dictionary<string, LineStats>();
-        
-        foreach (var stat in stats)
-        {
-            var extension = stat.Key;
-            var langConfig = LanguageConfigs.GetValueOrDefault(extension);
-            var langName = langConfig?.Name ?? extension.TrimStart('.').ToUpper();
-            
-            if (!result.ContainsKey(langName))
-                result[langName] = new LineStats(0, 0, 0, 0, 0);
-            
-            var current = result[langName];
-            result[langName] = new LineStats(
-                current.TotalLines + stat.Value.TotalLines,
-                current.NonBlankLines + stat.Value.NonBlankLines,
-                current.CommentLines + stat.Value.CommentLines,
-                current.CommentedCodeLines + stat.Value.CommentedCodeLines,
-                current.FileCount + stat.Value.FileCount
-            );
-        }
-        
-        return result;
-    }
-
-    private static void PrintTableHeader(bool showBlankLines)
-    {
-        PrintTableSeparator(showBlankLines);
-        Console.Write(NameColumnFormat, "Language");
-        Console.Write(FileColumnFormat, "Files");
-        Console.Write(ColumnFormat, "Code");
-        Console.Write(ColumnFormat, "Comments");
-        Console.Write(ColumnFormat, "Com. Code");
-        Console.Write(ColumnFormat, "Source");
+        // Print header
+        Console.WriteLine();
+        Console.Write(string.Format(NameColumnFormat, showByFileType ? "Extension" : "Language"));
+        Console.Write(string.Format(FileColumnFormat, "Files"));
+        Console.Write(string.Format(ColumnFormat, "Code"));
+        Console.Write(string.Format(ColumnFormat, "Comments"));
+        Console.Write(string.Format(ColumnFormat, "Com. Code"));
+        Console.Write(string.Format(ColumnFormat, "Source"));
         if (showBlankLines)
         {
-            Console.Write(ColumnFormat, "Blank");
-            Console.Write(ColumnFormat, "Total");
+            Console.Write(string.Format(ColumnFormat, "Blank"));
+            Console.Write(string.Format(ColumnFormat, "Total"));
         }
         Console.WriteLine();
-        PrintTableSeparator(showBlankLines);
+
+        Console.WriteLine(new string('-', showBlankLines ? 125 : 95));
+
+        // Print stats for each language/extension
+        foreach (var (ext, fileStats) in stats.OrderByDescending(s => s.Value.NonBlankLines))
+        {
+            var langInfo = LanguageConfigs.GetValueOrDefault(ext);
+            var displayName = showByFileType ? ext : (langInfo?.Name ?? "Other");
+            
+            PrintStatsLine(displayName, fileStats, showBlankLines);
+
+            // Update totals
+            totalStats = AddStats(totalStats, fileStats);
+            
+            // Update programming language totals
+            if (langInfo?.IsProgrammingLanguage == true)
+            {
+                programmingTotalStats = AddStats(programmingTotalStats, fileStats);
+            }
+        }
+
+        Console.WriteLine(new string('-', showBlankLines ? 125 : 95));
+        
+        // Print programming languages total
+        if (showProgrammingTotal && programmingTotalStats.FileCount > 0)
+        {
+            PrintStatsLine("Programming Total", programmingTotalStats, showBlankLines);
+        }
+
+        // Print overall total
+        PrintStatsLine("Total", totalStats, showBlankLines);
     }
 
-    private static void PrintTableSeparator(bool showBlankLines)
+    private static LineStats AddStats(LineStats a, LineStats b)
     {
-        Console.Write("----------------------+");
-        var remainingWidth = 11 + 11 + 11 + 11 + 11; // Files, Code, Comments, Com. Code, Source
-        if (showBlankLines)
-        {
-            remainingWidth += 22; // Blank and Total columns
-        }
-        Console.Write(new string('-', remainingWidth));
-        Console.WriteLine();
+        return new LineStats(
+            a.TotalLines + b.TotalLines,
+            a.NonBlankLines + b.NonBlankLines,
+            a.CommentLines + b.CommentLines,
+            a.CommentedCodeLines + b.CommentedCodeLines,
+            a.FileCount + b.FileCount
+        );
     }
 
-    private static void PrintTableRow(string name, LineStats stats, bool showBlankLines, bool isTotal = false)
+    private static void PrintStatsLine(string name, LineStats stats, bool showBlankLines)
     {
-        var actualCode = stats.NonBlankLines - stats.CommentLines - stats.CommentedCodeLines;
-        var blankLines = stats.TotalLines - stats.NonBlankLines;
-        var sourceLines = actualCode + stats.CommentLines + stats.CommentedCodeLines;
-
-        if (isTotal)
-        {
-            PrintTableSeparator(showBlankLines);
-        }
-
-        Console.Write(NameColumnFormat, name);
-        Console.Write(FileColumnFormat, stats.FileCount);
-        Console.Write(ColumnFormat, actualCode);
-        Console.Write(ColumnFormat, stats.CommentLines);
-        Console.Write(ColumnFormat, stats.CommentedCodeLines);
-        Console.Write(ColumnFormat, sourceLines);
-        
+        var sourceLines = stats.NonBlankLines - stats.CommentLines - stats.CommentedCodeLines;
+        Console.Write(string.Format(NameColumnFormat, name));
+        Console.Write(string.Format(FileColumnFormat, stats.FileCount));
+        Console.Write(string.Format(ColumnFormat, sourceLines));
+        Console.Write(string.Format(ColumnFormat, stats.CommentLines));
+        Console.Write(string.Format(ColumnFormat, stats.CommentedCodeLines));
+        Console.Write(string.Format(ColumnFormat, stats.NonBlankLines));
         if (showBlankLines)
         {
-            Console.Write(ColumnFormat, blankLines);
-            Console.Write(ColumnFormat, stats.TotalLines);
+            var blankLines = stats.TotalLines - stats.NonBlankLines;
+            Console.Write(string.Format(ColumnFormat, blankLines));
+            Console.Write(string.Format(ColumnFormat, stats.TotalLines));
         }
-        
         Console.WriteLine();
     }
 } 

@@ -25,6 +25,7 @@ dotnet publish locc.csproj -c Release -r win-x64 --self-contained true
 - Shows total lines of code across all files
 - Optional display of blank line statistics
 - Table-formatted output for better readability
+- Real-time progress display while processing files
 
 ## Requirements
 
@@ -151,6 +152,7 @@ The tool automatically excludes:
 - `[repository_path]`: Path to the git repository to analyze
 - `--by-extension`: Show results grouped by file extension instead of programming language
 - `--show-blank-lines`: Show blank line counts and file totals
+- `--show-languages-total`: Show separate total for programming languages (excluding markup, config files, etc.)
 - `--version`, `-v`: Display version information
 
 ## Comment Detection
