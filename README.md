@@ -111,6 +111,12 @@ dotnet tool uninstall -g locc
 # Show statistics by file extension instead of by language
 .\locc.exe --by-extension
 
+# Show total for programming languages only
+.\locc.exe --show-languages-total
+
+# Show help
+.\locc.exe --help
+
 # Show version
 .\locc.exe --version
 .\locc.exe -v
@@ -154,6 +160,9 @@ The tool automatically excludes:
 - `--show-blank-lines`: Show blank line counts and file totals
 - `--show-languages-total`: Show separate total for programming languages (excluding markup, config files, etc.)
 - `--version`, `-v`: Display version information
+
+Programming languages used for `--show-languages-total`:
+C#, Java, JavaScript, TypeScript, C++, C, Python, Ruby, PHP, SQL, Lua, Go
 
 ## Comment Detection
 
