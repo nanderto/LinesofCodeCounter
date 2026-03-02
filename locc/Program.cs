@@ -101,6 +101,12 @@ class Program
 
     static async Task Main(string[] args)
     {
+        if (args.Contains("--help") || args.Contains("-h"))
+        {
+            PrintHelp();
+            return;
+        }
+
         if (args.Contains("--version") || args.Contains("-v"))
         {
             PrintVersion();
@@ -158,6 +164,23 @@ class Program
         
         Console.WriteLine($"{title} version {version}");
         Console.WriteLine(description);
+    }
+
+    private static void PrintHelp()
+    {
+        Console.WriteLine("locc - Lines of Code Counter");
+        Console.WriteLine("Usage:");
+        Console.WriteLine("  locc [path] [options]");
+        Console.WriteLine();
+        Console.WriteLine("Options:");
+        Console.WriteLine("  -h, --help                 Show help and exit");
+        Console.WriteLine("  -v, --version              Show version and exit");
+        Console.WriteLine("  --show-blank-lines          Include blank/total columns in output");
+        Console.WriteLine("  --by-extension              Group results by file extension");
+        Console.WriteLine("  --show-languages-total      Show total for programming languages");
+        Console.WriteLine();
+        Console.WriteLine("Notes:");
+        Console.WriteLine("  If [path] is omitted, the tool will prompt for a repository path.");
     }
 
     private static async Task<Dictionary<string, LineStats>> CountLinesInRepository(string repoPath, IProgress<ProgressInfo>? progress = null)
