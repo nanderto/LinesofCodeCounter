@@ -181,6 +181,15 @@ class Program
         Console.WriteLine();
         Console.WriteLine("Notes:");
         Console.WriteLine("  If [path] is omitted, the tool will prompt for a repository path.");
+        Console.WriteLine();
+        Console.WriteLine("Programming languages (for --show-languages-total):");
+        var programmingLanguages = LanguageConfigs.Values
+            .Where(lang => lang.IsProgrammingLanguage)
+            .Select(lang => lang.Name)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(name => name)
+            .ToArray();
+        Console.WriteLine($"  {string.Join(", ", programmingLanguages)}");
     }
 
     private static async Task<Dictionary<string, LineStats>> CountLinesInRepository(string repoPath, IProgress<ProgressInfo>? progress = null)
@@ -369,7 +378,7 @@ class Program
         foreach (var (ext, fileStats) in stats.OrderByDescending(s => s.Value.NonBlankLines))
         {
             var langInfo = LanguageConfigs.GetValueOrDefault(ext);
-            var displayName = showByFileType ? ext : (langInfo?.Name ?? "Other");
+            var displayName = showByFileType ? ext : (langInfo?.Name ?? GetOtherDisplayName(ext));
             
             PrintStatsLine(displayName, fileStats, showBlankLines);
 
@@ -404,6 +413,14 @@ class Program
             a.CommentedCodeLines + b.CommentedCodeLines,
             a.FileCount + b.FileCount
         );
+    }
+
+    private static string GetOtherDisplayName(string extension)
+    {
+        if (string.IsNullOrWhiteSpace(extension))
+            return "Other";
+
+        return $"Other ({extension})";
     }
 
     private static void PrintStatsLine(string name, LineStats stats, bool showBlankLines)
